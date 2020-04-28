@@ -28,10 +28,9 @@ use std::sync::mpsc::{channel, Receiver};
 #[cfg(feature = "std")]
 use std::convert::TryFrom;
 
-#[cfg(feature = "std")]
 use balances::AccountData as AccountDataGen;
-#[cfg(feature = "std")]
 use system::AccountInfo as AccountInfoGen;
+
 #[cfg(feature = "std")]
 use codec::{Decode, Encode, Error as CodecError};
 
