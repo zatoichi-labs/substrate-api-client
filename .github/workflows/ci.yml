@@ -6,6 +6,8 @@ on:
     branches: [ master, 'polkadot-v[0-9]+.[0-9]+.[0-9]+*', 'release-polkadot-v[0-9]+.[0-9]+.[0-9]+*' ]
   pull_request:
     branches: [ master, 'polkadot-v[0-9]+.[0-9]+.[0-9]+*', 'release-polkadot-v[0-9]+.[0-9]+.[0-9]+*' ]
+  schedule:
+    - cron: "0 0 * * *"
 
 env:
   CARGO_TERM_COLOR: always
@@ -78,6 +80,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: init-rust-target
         run: rustup show && rustup component add rust-src
+
+      - name: Cargo update
+        if: ${{ github.event_name == 'schedule' }}
+        run: cargo update
+
+      - name: Upload Cargo.lock
+        uses: actions/upload-artifact@v4
+        # Upload the Cargo.lock from the build with --locked as this one should not update the Cargo.lock anymore
+        if: contains(matrix.check, '--locked')
+        with:
+          name: cargo-lock
+          path: Cargo.lock
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -202,7 +216,7 @@ jobs:
 
       - name: Run latest node
         run: |
-          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 paritypr/substrate:latest --dev --rpc-external &
+          docker run -p 9944:9944 -p 9933:9933 -p 30333:30333 paritypr/substrate:master-1680977e --dev --rpc-external &
 
       - name: Wait until node has started
         run: sleep 20s
@@ -229,6 +243,5 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           separate-directories: true
-          name: examples
-          pattern: examples-*
+          name: artifacts
           delete-merged: true
